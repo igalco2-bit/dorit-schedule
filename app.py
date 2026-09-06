@@ -1,10 +1,14 @@
 import streamlit as st
 import pandas as pd
 
-# הגדרת תצורת העמוד בעברית ומימין לשמאל
-st.set_page_config(page_title="ניהול מערכת שעות - תלמידי דורית", layout="centered")
+# הגדרת כותרת האתר בלשונית ואייקון מותאם אישית (📚)
+st.set_page_config(
+    page_title="תלמידי דורית - מערכת שעות",
+    page_icon="📚",
+    layout="centered"
+)
 
-# עיצוב CSS ליישור מימין לשמאל
+# עיצוב CSS ליישור מימין לשמאל והקטנת כל הכותרות
 st.markdown(
     """
     <style>
@@ -14,6 +18,16 @@ st.markdown(
     }
     th, td {
         text-align: right !important;
+    }
+    /* הקטנת כל הכותרות באפליקציה */
+    h1 {
+        font-size: 1.6rem !important;
+    }
+    h2 {
+        font-size: 1.3rem !important;
+    }
+    h3 {
+        font-size: 1.1rem !important;
     }
     </style>
     """,
@@ -39,7 +53,7 @@ if "schedule" not in st.session_state:
         day: {hour: "" for hour in HOURS} for day in DAYS
     }
 
-# שימוש בלשוניות ראשיות במסך המרכזי (במקום תפריט צד)
+# שימוש בלשוניות ראשיות במסך המרכזי
 main_tab1, main_tab2 = st.tabs(["📅 צפייה במערכת השעות", "✍️ ניהול והזנת תלמידים"])
 
 with main_tab1:
