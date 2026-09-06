@@ -8,13 +8,17 @@ st.set_page_config(
     layout="centered"
 )
 
-# עיצוב CSS ליישור מימין לשמאל והקטנת כל הכותרות
+# עיצוב CSS מלא ליישור מימין לשמאל, תיקון טבלאות והקטנת כותרות
 st.markdown(
     """
     <style>
     .stApp {
         direction: RTL;
         text-align: right;
+    }
+    /* יישור הטבלאות והתאים מימין לשמאל */
+    table {
+        direction: RTL;
     }
     th, td {
         text-align: right !important;
@@ -74,6 +78,7 @@ with main_tab1:
             df_data = []
             for h in HOURS:
                 student = day_data[h]
+                # סדר העמודות: קודם "שעה" (מימין) ואז "שם התלמיד" (משמאל)
                 df_data.append({
                     "שעה": h,
                     "שם התלמיד": student if student else "--- פנוי ---"
