@@ -1,26 +1,14 @@
-
 import streamlit as st
 import pandas as pd
 
 # הגדרת תצורת העמוד בעברית ומימין לשמאל
-st.set_page_config(page_title="ניהול מערכת שעות - תלמידי דורית", layout="wide")
+st.set_page_config(page_title="ניהול מערכת שעות - תלמידי דורית", layout="centered")
 
-# עיצוב CSS מתקדם שמותאם במיוחד למסכי טלפון נייד וליישור מימין לשמאל
+# עיצוב CSS ליישור מימין לשמאל
 st.markdown(
     """
     <style>
-    /* יישור כללי לימין */
     .stApp {
-        direction: RTL;
-        text-align: right;
-    }
-    /* התאמת תפריט צד למסכים ניידים */
-    [data-testid="stSidebar"] {
-        direction: RTL;
-        text-align: right;
-    }
-    /* תיקון יישור בטבלאות */
-    table {
         direction: RTL;
         text-align: right;
     }
@@ -51,75 +39,77 @@ if "schedule" not in st.session_state:
         day: {hour: "" for hour in HOURS} for day in DAYS
     }
 
-# תפריט צדדי לפעולות
-st.sidebar.header("ניהול תלמידים")
-action = st.sidebar.radio("בחר פעולה:", ["הוספת / עדכון תלמיד", "איפוס שעה"])
+# שימוש בלשוניות ראשיות במסך המרכזי (במקום תפריט צד)
+main_tab1, main_tab2 = st.tabs(["📅 צפייה במערכת השעות", "✍️ ניהול והזנת תלמידים"])
 
-if action == "הוספת / עדכון תלמיד":
-    st.sidebar.subheader("הזנה או שינוי שעה")
-    student_name = st.sidebar.text_input("שם התלמיד:")
-    selected_day = st.sidebar.selectbox("בחר יום:", DAYS)
-    selected_hour = st.sidebar.selectbox("בחר שעה:", HOURS)
+with main_tab1:
+    st.subheader("לוח שיעורים שבועי")
+    day_tab_sun, day_tab_tue, day_tab_thu = st.tabs(["יום ראשון", "יום שלישי", "יום חמישי"])
     
-    if st.sidebar.button("שמור שיבוץ"):
-        if not student_name.strip():
-            st.sidebar.error("נא להזין שם תלמיד.")
-        else:
-            current_occupant = st.session_state.schedule[selected_day][selected_hour]
-            if current_occupant and current_occupant != student_name:
-                st.sidebar.warning(f"שים לב: השעה כבר תפוסה על ידי {current_occupant}. השיבוץ יעודכן.")
-            
-            # ניקוי שיבוץ קודם של התלמיד אם קיים
-            for d in DAYS:
-                for h, stud in st.session_state.schedule[d].items():
-                    if stud == student_name:
-                        st.session_state.schedule[d][h] = ""
-            
-            st.session_state.schedule[selected_day][selected_hour] = student_name.strip()
-            st.sidebar.success(f"התלמיד {student_name} שובץ בהצלחה ביום {selected_day} בשעה {selected_hour}!")
-
-elif action == "איפוס שעה":
-    st.sidebar.subheader("פנוי שעה / הסרת תלמיד")
-    reset_day = st.sidebar.selectbox("יום:", DAYS, key="reset_day")
-    reset_hour = st.sidebar.selectbox("שעה פנויה:", HOURS, key="reset_hour")
+    days_mapping = {
+        "ראשון": day_tab_sun,
+        "שלישי": day_tab_tue,
+        "חמישי": day_tab_thu
+    }
     
-    if st.sidebar.button("פנה שעה זו"):
-        current = st.session_state.schedule[reset_day][reset_hour]
-        if current:
-            st.session_state.schedule[reset_day][reset_hour] = ""
-            st.sidebar.success(f"השעה פונתה בהצלחה (היה משובץ: {current}).")
-        else:
-            st.sidebar.info("השעה כבר פנויה.")
+    for day_name, tab in days_mapping.items():
+        with tab:
+            st.markdown(f"### מערכת שעות - יום {day_name}")
+            day_data = st.session_state.schedule[day_name]
+            
+            df_data = []
+            for h in HOURS:
+                student = day_data[h]
+                df_data.append({
+                    "שעה": h,
+                    "שם התלמיד": student if student else "--- פנוי ---"
+                })
+            
+            df = pd.DataFrame(df_data)
+            st.table(df)
 
-# הצגת הלוחות לפי ימים בלשוניות
+with main_tab2:
+    st.subheader("ניהול תלמידים (הוספה, שינוי או פינוי שעה)")
+    
+    action = st.radio("בחר פעולה:", ["הוספת / עדכון תלמיד", "איפוס שעה"])
+    
+    if action == "הוספת / עדכון תלמיד":
+        st.markdown("#### הזנה או שינוי שעה לתלמיד")
+        student_name = st.text_input("שם התלמיד:")
+        selected_day = st.selectbox("בחר יום:", DAYS)
+        selected_hour = st.selectbox("בחר שעה:", HOURS)
+        
+        if st.button("שמור שיבוץ"):
+            if not student_name.strip():
+                st.error("נא להזין שם תלמיד.")
+            else:
+                current_occupant = st.session_state.schedule[selected_day][selected_hour]
+                if current_occupant and current_occupant != student_name:
+                    st.warning(f"שים לב: השעה כבר תפוסה על ידי {current_occupant}. השיבוץ יעודכן.")
+                
+                # ניקוי שיבוץ קודם של התלמיד אם קיים במקום אחר
+                for d in DAYS:
+                    for h, stud in st.session_state.schedule[d].items():
+                        if stud == student_name:
+                            st.session_state.schedule[d][h] = ""
+                
+                st.session_state.schedule[selected_day][selected_hour] = student_name.strip()
+                st.success(f"התלמיד {student_name} שובץ בהצלחה ביום {selected_day} בשעה {selected_hour}!")
+
+    elif action == "איפוס שעה":
+        st.markdown("#### פנוי שעה קיימת")
+        reset_day = st.selectbox("יום:", DAYS, key="reset_day")
+        reset_hour = st.selectbox("שעה פנויה:", HOURS, key="reset_hour")
+        
+        if st.button("פנה שעה זו"):
+            current = st.session_state.schedule[reset_day][reset_hour]
+            if current:
+                st.session_state.schedule[reset_day][reset_hour] = ""
+                st.success(f"השעה פונתה בהצלחה (היה משובץ: {current}).")
+            else:
+                st.info("השעה כבר פנויה.")
+
+# סיכום כללי בתחתית
 st.markdown("---")
-st.subheader("לוח שיעורים שבועי")
-
-tab_sun, tab_tue, tab_thu = st.tabs(["📅 ראשון", "📅 שלישי", "📅 חמישי"])
-
-tabs_mapping = {
-    "ראשון": tab_sun,
-    "שלישי": tab_tue,
-    "חמישי": tab_thu
-}
-
-for day_name, tab in tabs_mapping.items():
-    with tab:
-        st.markdown(f"### יום {day_name}")
-        day_data = st.session_state.schedule[day_name]
-        
-        df_data = []
-        for h in HOURS:
-            student = day_data[h]
-            df_data.append({
-                "שעה": h,
-                "שם התלמיד": student if student else "--- פנוי ---"
-            })
-        
-        df = pd.DataFrame(df_data)
-        st.dataframe(df, use_container_width=True)
-
-# סיכום כללי
-with st.expander("📊 סיכום כללי"):
-    total_booked = sum(1 for d in DAYS for h, s in st.session_state.schedule[d].items() if s)
-    st.write(f"סך הכל תלמידים משובצים: {total_booked} מתוך 18 שעות אפשריות.")
+total_booked = sum(1 for d in DAYS for h, s in st.session_state.schedule[d].items() if s)
+st.info(f"📊 סיכום מערכת: סך הכל {total_booked} תלמידים משובצים מתוך 18 שעות אפשריות.")
