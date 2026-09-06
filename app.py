@@ -3,7 +3,7 @@ import pandas as pd
 
 # הגדרת כותרת האתר בלשונית ואייקון מותאם אישית (📚)
 st.set_page_config(
-    page_title="תלמידי דורית - מערכת שעות",
+    page_title="מערכת שעות",
     page_icon="📚",
     layout="centered"
 )
@@ -34,7 +34,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("📚 מערכת ניהול שעות - תלמידי דורית")
+st.title("📚 מערכת ניהול שעות")
 
 # הגדרת ימים ושעות אפשריות
 DAYS = ["ראשון", "שלישי", "חמישי"]
