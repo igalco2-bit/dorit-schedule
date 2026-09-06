@@ -61,7 +61,7 @@ if action == "הוספת / עדכון תלמיד":
             # בדיקה האם השעה כבר תפוסה ביום המבוקש
             current_occupant = st.session_state.schedule[selected_day][selected_hour]
             if current_occupant and current_occupant != student_name:
-                st.sidebar.warning(, שים לב: השעה כבר תפוסה על ידי {current_occupant}. השיבוץ יעודכן.)
+                st.sidebar.warning(" שים לב: השעה כבר תפוסה על ידי {current_occupant}. השיבוץ יעודכן.")
             
             # אם התלמיד היה משובץ במקום אחר, נקה לו את השעה הישנה כדי שלא יהיה כפול
             for d in DAYS:
